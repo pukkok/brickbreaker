@@ -1,8 +1,8 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
-canvas.width = window.innerWidth > 720 ? 720 : window.innerWidth / 2;
-canvas.height = canvas.width * 2 ;
+canvas.width = window.innerWidth > 720 ? 720 : window.innerWidth;
+canvas.height = window.innerHeight;
 
 import {whiteBall, blueBall, greenBall} from './balls.js'
 import bricks from './block.js'
@@ -57,10 +57,10 @@ const drawBricks = () => {
     selectedBricks.forEach(brick => {
         ctx.fillStyle = '#b22222'
         ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
-        ctx.strokeStyle = 'blue'
-        ctx.strokeRect(brick.x, brick.y, brick.width, brick.height)
         ctx.fillStyle = 'red'
         ctx.fillRect(brick.x, brick.y, brick.width * brick.health / brick.maxHealth , brick.height / 5)
+        ctx.strokeStyle = 'blue'
+        ctx.strokeRect(brick.x, brick.y, brick.width, brick.height)
     })
 }
 
@@ -140,6 +140,18 @@ const ballSpeedUp = (ballColor) => {
     })
 }
 
+const playBtn = document.querySelector('.play-btn-box button')
+playBtn.addEventListener('click', () => {
+    if(playBtn.className === 'stop'){
+        cancelAnimationFrame(pause)
+        playBtn.className = 'play'
+    }else{
+        draw()
+        playBtn.className = 'stop'
+    }
+})
+
+
 const btns = document.querySelectorAll('.control-box .btn-box button')
 btns.forEach((btn, i) => {
     btn.addEventListener('click', () => {
@@ -163,15 +175,6 @@ btns.forEach((btn, i) => {
     }
     if(btn.dataset.type === 'speed'){
         ballSpeedUp(btn.className)
-    }
-
-    if(btn.dataset.type === 'stop'){
-        cancelAnimationFrame(pause)
-    }
-
-    if(btn.dataset.type === 'start'){
-        draw()
-        console.log(balls)
     }
 
     initOption()
