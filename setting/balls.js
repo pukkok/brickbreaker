@@ -2,9 +2,18 @@ const randomDirection = () => {
     return Math.random() < 0.5 ? -1 : 1; // 방향을 랜덤으로 결정 (왼쪽/오른쪽, 위/아래)
 }
 
-let whiteBall = {
+let userBall = {
     color: 'white',
     radius: 10,
+    dx: 1 * randomDirection(),
+    dy: 1 * randomDirection(),
+    damage : 1,
+    counts: 1
+}
+
+let whiteBall = {
+    color: 'white',
+    radius: 5,
     dx: 1 * randomDirection(),
     dy: 1 * randomDirection(),
     damage: 1,
@@ -13,7 +22,7 @@ let whiteBall = {
 
 let blueBall = {
     color: 'blue',
-    radius: 10,
+    radius: 5,
     dx: 1 * randomDirection(),
     dy: 1 * randomDirection(),
     damage: 2,
@@ -22,11 +31,11 @@ let blueBall = {
 
 let greenBall = {
     color: 'green',
-    radius: 10,
+    radius: 5,
     dx: 1 * randomDirection(),
     dy: 1 * randomDirection(),
     damage: 2,
     counts: 0
 }
 
-export { whiteBall, blueBall, greenBall }
+export { userBall, whiteBall, blueBall, greenBall }

@@ -1,17 +1,18 @@
-const canvas = document.getElementById('canvas');
+const root = document.getElementById('root')
+const canvas = document.createElement('canvas');
+const controlBox = document.createElement('div')
+controlBox.className = 'control-box'
 const ctx = canvas.getContext('2d');
+const axios = window.axios
+import { userBall, whiteBall, blueBall, greenBall} from './setting/balls.js'
+import bricks from './setting/block.js'
+import { needExp } from './setting/base.js'
+import { drawWall, drawBall, moveBall, drawBricks, checkCollision, createBrick } from './setting/Draw.js';
 
 canvas.width = window.innerWidth > 720 ? 720 : window.innerWidth;
 canvas.height = window.innerHeight;
 
-import {whiteBall, blueBall, greenBall} from './balls.js'
-import bricks from './block.js'
-
-const getRandomPosition = (radius, wallWidth, wallHeight) => {
-    const x = radius + 10 + Math.random() * (wallWidth - 2 * radius - 20);
-    const y = radius + 10 + Math.random() * (wallHeight - 2 * radius - 20);
-    return { x, y };
-}
+const token = JSON.parse(localStorage.getItem('token'))
 
 let wall = {
     thick: 4,
@@ -19,85 +20,71 @@ let wall = {
     height: canvas.height,
 }
 let pause
-let stage = 1;
+let stage = 1
+let userInfo = {
+    exp : 0,
+    level : 1,
+    gold : 0
+}
 
-
-const drawWall = () => {
-    const { thick, width, height } = wall;
-    // 벽
-    ctx.fillStyle = '#2f2f2f';
-    // ctx.strokeRect(thick, thick, )
-    ctx.fillRect(0, 0, width, height);
-};
-
-const drawBall = (ball) => {
-    ctx.fillStyle = ball.color;
-    ctx.beginPath();
-    ctx.arc(ball.x, ball.y, ball.radius, 0, 2 * Math.PI, false);
-    ctx.fill();
-    ctx.closePath();
-};
-
-const moveBall = (ball) => {
-    ball.x += ball.dx;
-    ball.y += ball.dy;
-
-    if (ball.x > wall.width - ball.radius || ball.x < ball.radius) {
-        ball.dx = -ball.dx;
-    }
-
-    if (ball.y > wall.height - ball.radius || ball.y < ball.radius) {
-        ball.dy = -ball.dy;
+async function loadData () {
+    if(token){
+        const {data} = await axios.post('/game/data', {}, {
+            headers : {'Authorization' : `Bearer ${token}`}
+        })
+        if(data.code === 200){
+            const {exp, gold, level, userId} = data
+            userInfo = { ...userInfo, exp, gold, level, userId }
+            starter()
+        }
+    }else{
+        console.log('로그인 먼저 하기')
     }
 }
+loadData()
 
-let selectedBricks = bricks[0]
 
-const drawBricks = () => {
-    selectedBricks.forEach(brick => {
-        ctx.fillStyle = '#b22222'
-        ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
-        ctx.fillStyle = 'red'
-        ctx.fillRect(brick.x, brick.y, brick.width * brick.health / brick.maxHealth , brick.height / 5)
-        ctx.strokeStyle = 'blue'
-        ctx.strokeRect(brick.x, brick.y, brick.width, brick.height)
-    })
+const getRandomPosition = (radius, wallWidth, wallHeight) => {
+    const x = radius + 10 + Math.random() * (wallWidth - 2 * radius - 20);
+    const y = radius + 10 + Math.random() * (wallHeight - 2 * radius - 20);
+    return { x, y };
 }
 
-const checkCollision = (ball, brick) => {
-    return (
-        ball.x + ball.radius > brick.x &&
-        ball.x - ball.radius < brick.x + brick.width &&
-        ball.y + ball.radius > brick.y &&
-        ball.y - ball.radius < brick.y + brick.height
-    )
-}
+let selectedBricks = bricks[0] // 벽돌 맵
+selectedBricks = selectedBricks.map(brick => {
+    const { x, y, width, height, maxHealth } = brick
+    return createBrick(x, y, width, height, maxHealth)
+})
 
 let balls = [];
-
 function firstGetBall () {
-    const {x, y} = getRandomPosition(whiteBall.radius, wall.width, wall.height);
-    balls.push({ ...whiteBall, x, y });
+    const {x, y} = getRandomPosition(whiteBall.radius, wall.width, wall.height)
+    balls.push({ ...userBall, x, y })
 }
 
 function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawWall()
-    drawBricks()
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    drawWall(wall, ctx)
+    drawBricks(selectedBricks, ctx)
     
     balls.forEach(ball => {
-        moveBall(ball);
-        drawBall(ball);
+        moveBall(ball, wall);
+        drawBall(ball, ctx);
 
         // 벽돌과 충돌 체크
         selectedBricks = selectedBricks.filter(brick => {
             if (checkCollision(ball, brick)) {
                 brick.health -= ball.damage; // 벽돌 체력 감소
-                ball.dx = -ball.dx;
-                ball.dy = -ball.dy;
-                return brick.health > 0; // 체력이 0 이하인 벽돌은 제거
+                ball.dx = -ball.dx
+                ball.dy = -ball.dy
+                if(brick.health === 0){
+                    userInfo.exp += 1
+                    getExp()
+                }
+
+                return brick.health > 0 // 체력이 0 이하인 벽돌은 제거
             }
-            return true;
+            return true
         })
     })
 
@@ -109,40 +96,47 @@ function draw() {
     //     initOption()
     // }
 
-    pause = requestAnimationFrame(draw);
+    pause = requestAnimationFrame(draw)
 }
 
-const addBall = (ball) => {
-    const {x, y} = getRandomPosition(ball.radius, wall.width, wall.height)
-    balls.push({ ...ball, x, y })
+const expBar = document.createElement('div')
+expBar.className = 'exp-bar'
+const getExp = () => {
+    expBar.innerHTML=''
+    if(userInfo.exp / needExp[userInfo.level-1] === 1){
+        userInfo = {...userInfo, level : userInfo.level + 1, exp: 0}
+    }
+    const expText = document.createElement('span')
+    expText.innerText = `${userInfo.exp} / ${needExp[userInfo.level-1]}`
+    const currentExp = document.createElement('div')
+    currentExp.className = 'current-exp'
+    currentExp.style.width = `${expBar.offsetWidth * (userInfo.exp / needExp[userInfo.level-1])}px`
+
+    initInfo()
+    expBar.append(currentExp, expText)
 }
 
-const deleteBall = (deleteBallColor) => {
-    let isDelete = false
-    balls = balls.filter(ball => {
-        if(!isDelete && ball.color === deleteBallColor){
-            isDelete = true
-            return
-        }
-        return ball
-    })
-    return isDelete
+const infoBox = document.createElement('div')
+infoBox.className = 'info-box'
+const initInfo = () => {
+    infoBox.innerHTML = ''
+    const info_h1 = document.createElement('h1')
+    info_h1.innerHTML = `플레이어 정보 <span>(${userInfo.userId ? userInfo.userId : '비회원'})</span>`
+    const playerInfo = document.createElement('div')
+    playerInfo.className = 'info'
+    const levelText = document.createElement('p')
+    levelText.innerText = `레벨 : ${userInfo.level}`
+    playerInfo.append(levelText)
+    infoBox.append(info_h1, playerInfo)
 }
 
-const ballSpeedUp = (ballColor) => {
-    if (ballColor === 'white') whiteBall.dx += 0.5; whiteBall.dy += 0.5;
-    balls = balls.filter(ball => {
-        if(ball.color === ballColor){
-            ball.dx = (ball.dx / Math.abs(ball.dx)) * (Math.abs(ball.dx) + 0.5)
-            ball.dy = (ball.dy / Math.abs(ball.dy)) * (Math.abs(ball.dy) + 0.5)
-        }
-        return ball
-    })
-}
-
-const playBtn = document.querySelector('.play-btn-box button')
+// 세팅 박스
+const setBox = document.createElement('div')
+setBox.className = 'set-box'
+const playBtn = document.createElement('button')
+playBtn.className = 'stop'
 playBtn.addEventListener('click', () => {
-    if(playBtn.className === 'stop'){
+    if(playBtn.classList.contains('stop')){
         cancelAnimationFrame(pause)
         playBtn.className = 'play'
     }else{
@@ -151,55 +145,51 @@ playBtn.addEventListener('click', () => {
     }
 })
 
+const settingBtn = document.createElement('button')
+settingBtn.className = 'setting'
+settingBtn.addEventListener('click', () => {
+    console.log('세팅')
+})
+setBox.append(playBtn, settingBtn)
 
-const btns = document.querySelectorAll('.control-box .btn-box button')
-btns.forEach((btn, i) => {
-    btn.addEventListener('click', () => {
-        let ball = ''
-        switch(btn.className){
-            case 'white' : ball = whiteBall
-            break
-            case 'blue' : ball = blueBall
-            break
-            case 'green' : ball = greenBall
-            break
-        }
+const loginBox = document.createElement('div')
+const loginLink = document.createElement('a')
+loginLink.innerText = '로그인'
+loginLink.href = './Page/login.html'
+loginBox.append(loginLink)
 
-    if(btn.dataset.type === 'add'){
-        addBall(ball)
-        ball.counts++
+const logout = document.createElement('div')
+const logoutBtn = document.createElement('button')
+logoutBtn.innerText = '로그아웃'
+logoutBtn.addEventListener('click', () => {
+    if(token){
+        localStorage.clear()
+        alert('로그아웃 되었습니다.')
+        window.location.reload()
+    }else{
+        alert('로그아웃 불가능')
     }
-    if(btn.dataset.type === 'delete'){
-        const success = deleteBall(btn.className)
-        if(success) ball.counts--
-    }
-    if(btn.dataset.type === 'speed'){
-        ballSpeedUp(btn.className)
-    }
+})
+logout.append(logoutBtn)
 
-    initOption()
-    })
+const saveBtn = document.createElement('button')
+saveBtn.innerText = '저장하기'
+saveBtn.addEventListener('click', async () => {
+    const {data} = await axios.post('/game/save', {
+        userInfo
+    }, {headers : {'Authorization' : `Bearer ${token}`}})
+    alert(data.msg)
 })
 
-const optionBox = document.querySelector('.option-box')
 
-function initOption () {
-    optionBox.innerHTML = ''
-    const h2 = document.createElement('h2')
-    h2.innerText = `스테이지 : ${stage}`
-    const span1 = document.createElement('span')
-    span1.innerText = `기본공 : ${whiteBall.counts}`
-    const span2 = document.createElement('span')
-    span2.innerText = `파란공 : ${blueBall.counts}`
-    const span3 = document.createElement('span')
-    span3.innerText = `녹색공 : ${greenBall.counts}`
-    const spanAll = document.createElement('span')
-    spanAll.innerText = `총 개수 : ${whiteBall.counts + blueBall.counts + greenBall.counts}`
-    optionBox.append(h2, span1, span2, span3, spanAll)
-}
+root.innerHTML = ''
+controlBox.append(expBar, setBox, infoBox, loginBox, logout, saveBtn)
+root.append(canvas, controlBox)
 
-document.addEventListener('DOMContentLoaded', () => {
-    firstGetBall()
+firstGetBall()
+function starter() {
     draw()
-    initOption()
-});
+    initInfo()
+    getExp()
+}
+starter()

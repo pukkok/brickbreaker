@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>brick</title>
+    <link rel="stylesheet" href="game.css">
+</head>
+<body>
+    <div class="wrapper">
+    <section>
+        <canvas id="canvas"></canvas>
+        <div id="root"></div>
+        <div class="control-box">
+            <button class="abc">테스트용</button>
+            <div class="exp-bar"></div>
+            <div class="play-btn-box">
+                <button class="stop"></button>
+                <button class="setting"></button>
+            </div>
+            <div>
+                <h1>플레이어 정보 <span>Pukkok</span></h1>
+                <div class="info"></div>
+            </div>
+            <div class="option-box"></div>
+            <div class="normal">
+                기본공
+                <div class="btn-box">
+                    <button data-type="add" class="white">기본공 추가</button>
+                    <button data-type="speed" class="white">기본공 속도 증가</button>
+                    <button data-type="delete" class="white">기본공 삭제</button>
+                </div>
+            </div>
+            <div class="btn-box">
+                <button data-type="add" class="blue">파란공 추가</button>
+                <button data-type="speed" class="blue">파란공 속도 증가</button>
+                <button data-type="delete" class="blue">파란공 삭제</button>
+            </div>
+            <div class="btn-box">
+                <button data-type="add" class="green">녹색공 추가</button>
+                <button data-type="speed" class="green">녹색공 속도 증가</button>
+                <button data-type="delete" class="green">녹색공 삭제</button>
+            </div>
+        </div>
+
+        </section>
+    </div>
+    
+    <script type="module" src="game.js"></script>
+</body>
+</html>

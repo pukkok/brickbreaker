@@ -1,66 +1,76 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-button{
-    all: unset;
-    cursor: pointer;
-}
-
-body{
-    background: #e1e1e1;
-}
-
-.wrapper{
-    width: 1280px;
-    margin: 0 auto;
-}
-
-section{
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    margin: 0;
-}
-
 .color-tester{
     color: #38e2ac;
 }
 
 .control-box{
+    width: 100%;
     border-left: #e1e1e1 2px solid;
     background-color: #2f2f2f;
+    color: white;
     padding: 10px;
+}
+
+.exp-bar{
+    width: 100%;
+    height: 10px;
+    background-color: white;
+    position: relative;
+}
+
+.exp-bar span{
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: #2f2f2f;
+}
+
+.current-exp{
+    background-color: #38e2ac;
+    height: 100%;
 }
 
 .option-box{
     display: flex;
     gap: 20px;
-    color: white;
     font-size: 20px;
     margin-bottom: 20px;
 }
 
 .btn-box button{
     background-color: blue;
-    color: white;
     padding: 2px;
     font-size: 18px;
 }
 
-button.stop{
+.set-box{
+    padding: 10px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.set-box button{
     width: 30px;
     height: 30px;
+}
+
+button.stop{
     background-image: url('./public/imgs/pause.png');
     background-size: cover;
     filter: invert(1);
 }
 button.play{
-    width: 30px;
-    height: 30px;
     background-image: url('./public/imgs/play-buttton.png');
     background-size: cover;
     filter: invert(1);
+}
+button.setting{
+    background-image: url(./public/imgs/setting.png);
+    background-size: cover;
+    filter: invert(1);
+    transition: 1s;
+}
+button.setting:hover{
+    transform: rotate(60deg);
 }
