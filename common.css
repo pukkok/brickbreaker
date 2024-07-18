@@ -12,9 +12,15 @@
     font-family: 'Ownglyph_UNZ-Rg';
 }
 
-button{
+button, a{
     all: unset;
     cursor: pointer;
+}
+
+ul, li{
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
 body{
@@ -32,3 +38,4 @@ body{
     display: flex;
     padding: 10px;
 }
+

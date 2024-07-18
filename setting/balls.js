@@ -3,6 +3,7 @@ const randomDirection = () => {
 }
 
 let userBall = {
+    type: 'user',
     color: 'white',
     radius: 10,
     dx: 1 * randomDirection(),
@@ -11,8 +12,8 @@ let userBall = {
     counts: 1
 }
 
-let whiteBall = {
-    color: 'white',
+let yellowBall = {
+    color: 'yellow',
     radius: 5,
     dx: 1 * randomDirection(),
     dy: 1 * randomDirection(),
@@ -38,4 +39,4 @@ let greenBall = {
     counts: 0
 }
 
-export { userBall, whiteBall, blueBall, greenBall }
+export { userBall, yellowBall, blueBall, greenBall }
