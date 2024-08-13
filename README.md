@@ -1,6 +1,5 @@
-"# brickbreaker" 
-
-https://pukkok.github.io/brickbreaker
+<h2> brickbreaker <a href='https://pukkok.github.io/brickbreaker'>[게임하러가기]</a></h2>
+<img src="public/extra/main-game.JPG" alt=""/>
 
 ## 게임 방법
 1. 로그인 해도 되고 안해도 됩니다.
